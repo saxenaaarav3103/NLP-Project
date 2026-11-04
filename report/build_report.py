@@ -247,11 +247,13 @@ def build():
 
     abl = []
     if nw and iw:
-        abl.append(f"class weights none / 1/√f / 1/f: W-F1 {nw['weighted_f1']:.3f} / {final['weighted_f1']:.3f} / "
-                   f"{iw['weighted_f1']:.3f}, macro-F1 {nw['macro_f1']:.3f} / {final['macro_f1']:.3f} / {iw['macro_f1']:.3f}")
+        abl.append(f"class weights none / 1/√f / 1/f give W-F1 {nw['weighted_f1']:.3f} / {final['weighted_f1']:.3f} / "
+                   f"{iw['weighted_f1']:.3f} and macro-F1 {nw['macro_f1']:.3f} / {final['macro_f1']:.3f} / "
+                   f"{iw['macro_f1']:.3f}: without weights rare classes are almost never predicted, with 1/f they are "
+                   "heavily over-predicted (1/√f was fixed a priori; on dev, no weights scored slightly higher W-F1)")
     if c4:
         abl.append(f"4 instead of 2 context turns: W-F1 {c4['weighted_f1']:.3f} vs {final['weighted_f1']:.3f}")
-    abl_text = (" Ablations (seed 42, test): " + "; ".join(abl) + ".") if abl else ""
+    abl_text = (" Single-seed ablations (test): " + "; ".join(abl) + ".") if abl else ""
     if len(common) >= 2 and wins == len(common):
         ctx_text = (f" **Context** helped on every seed: paired by seed, +{st.mean(d_w) * 100:.1f} weighted-F1 "
                     f"and {st.mean(d_a) * 100:+.1f} accuracy points on average.")
@@ -269,9 +271,13 @@ def build():
     para(doc, before=4, text=
          f"**Findings.** Fine-tuned RoBERTa clearly beats the classical baseline: +{gain_base_w * 100:.1f} "
          f"weighted-F1 points over TF-IDF (mean of the context runs, {mean(ctx, 'weighted_f1'):.3f})."
-         f"{ctx_text}{abl_text} Per class (Fig. 1a), *{best_cls}* is easiest (F1 {pc[best_cls]['f1']:.2f}) and "
-         f"*{worst[0]}* / *{worst[1]}* are hardest (F1 {pc[worst[0]]['f1']:.2f} / {pc[worst[1]]['f1']:.2f}; "
-         f"only {pc[worst[0]]['support']} and {pc[worst[1]]['support']} test examples). The confusion matrix "
+         f"{ctx_text}")
+    fear_runs = [r["per_class"]["fear"]["f1"] for r in ctx]
+    para(doc, text=
+         f"**Ablations and errors.**{abl_text} Per class (Fig. 1a), *{best_cls}* is easiest (F1 "
+         f"{pc[best_cls]['f1']:.2f}) and *{worst[0]}* / *{worst[1]}* are hardest (F1 {pc[worst[0]]['f1']:.2f} / "
+         f"{pc[worst[1]]['f1']:.2f}; only {pc[worst[0]]['support']} and {pc[worst[1]]['support']} test examples; "
+         f"fear F1 ranges {min(fear_runs):.2f}-{max(fear_runs):.2f} across seeds). The confusion matrix "
          "(Fig. 1b) shows that for five of the six emotions the dominant error is *neutral*: mild emotion "
          "often looks neutral in text. For reference, published text-only systems using the much larger RoBERTa-large with "
          "speaker-aware context reach about 0.65 weighted-F1 on MELD [3].")

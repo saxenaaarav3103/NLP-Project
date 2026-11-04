@@ -58,7 +58,8 @@ Expect turn 3 ("I'm kind of terrified, actually.") to come out as *sadness* rath
 **5. Why it works and its limitations (about 45 s).** Open the *About the model* tab.
 > "Why it works: RoBERTa was pre-trained on 160 GB of text, so it already understands negation,
 > intensity and idioms. Fine-tuning teaches it which cues map to which emotion, and class
-> weighting stops it from just predicting 'neutral', which is half the data. On the 2,610
+> weighting makes it predict the rare emotions about as often as they really occur, instead
+> of defaulting to 'neutral', which is half the data. On the 2,610
 > unseen test utterances it clearly beats the baseline; the table shows accuracy, weighted F1
 > and macro F1."
 >
@@ -99,9 +100,17 @@ For a class such as anger: precision is the share of "anger" predictions that we
 anger. Recall is the share of real anger turns that the model found. F1 is their harmonic mean.
 
 **How did you handle class imbalance?**
-The cross-entropy loss is weighted by 1/sqrt(class frequency). Fully inverse weights made the
-model over-predict rare classes, and no weights made it ignore them. There is also an
-ablation without weights in `results/`.
+The cross-entropy loss is weighted by 1/sqrt(class frequency), a middle ground I tested
+against both extremes (test set: 68 disgust and 50 fear examples):
+- **No weights:** the model almost ignores rare classes. It predicts disgust only 20 times and
+  fear 10 times; macro-F1 is 0.423.
+- **Full inverse weights (1/freq):** it over-predicts them. Disgust is predicted 205 times at
+  13% precision and fear 133 times, and weighted-F1 drops by 6 points to 0.571.
+- **1/sqrt(freq), my choice:** disgust is predicted 71 times, close to the true 68. This gives
+  the best macro-F1 (0.444) and weighted-F1 (0.633) of the three.
+
+To be transparent: on the dev set, no weights had slightly higher weighted-F1. I chose
+1/sqrt in advance as a compromise, because macro-F1 matters for the rare emotions.
 
 **How do you know you're not overfitting to the test set?**
 All choices (baseline regularisation, best training epoch) were made on the dev set. The test
@@ -146,6 +155,12 @@ for its own tagging and parsing tasks, so it's not bit-identical to the original
 implementation at every layer. With normal internet access, `--base-model roberta-base`
 downloads the original directly.
 
+**Would more context help?**
+I tried 4 previous turns instead of 2 (single seed): test weighted-F1 0.620 vs 0.633, while
+the dev score was slightly higher. There was no consistent trend, so the amount of context is
+not the bottleneck in this setup.
+
 **How could it be improved?**
-A larger model (roberta-large), more context turns, speaker-aware context, data augmentation
-or focal loss for rare classes, and adding audio features (MELD includes them).
+A larger model (roberta-large), speaker-aware context (who said what), data augmentation or
+focal loss for rare classes, and adding audio features (MELD includes them). Tone of voice is
+the information the text model is missing most.

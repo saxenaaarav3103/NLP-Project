@@ -19,7 +19,16 @@ baseline, and an utterance-only RoBERTa ablation. A Gradio web app demos it live
 | RoBERTa, utterance only | 0.625 ± 0.008 | 0.629 ± 0.004 | 0.625 ± 0.008 | 0.625 ± 0.006 | 0.454 ± 0.001 |
 | **RoBERTa + 2 context turns (final)** | 0.626 ± 0.010 | 0.631 ± 0.003 | 0.626 ± 0.010 | 0.626 ± 0.007 | 0.447 ± 0.008 |
 
-RoBERTa rows are the mean ± standard deviation over 3 random seeds (42, 13, 7). The shipped model is the seed-42 run: weighted-F1 **0.633**, macro-F1 **0.444**, accuracy **0.638**.
+RoBERTa rows are the mean ± standard deviation over 3 random seeds (42, 13, 7). The shipped model is the seed-42 run (fixed in advance, not picked as the best of the three): weighted-F1 **0.633**, macro-F1 **0.444**, accuracy **0.638**.
+
+Ablations (seed 42, test set):
+
+| Variant | Dev weighted F1 | Test weighted F1 | Test macro F1 |
+|---|---|---|---|
+| Final: 2 context turns, class weights 1/sqrt(freq) | 0.594 | 0.633 | 0.444 |
+| No class weights | 0.602 | 0.623 | 0.422 |
+| Inverse-frequency class weights 1/freq | 0.561 | 0.571 | 0.407 |
+| 4 context turns | 0.602 | 0.620 | 0.452 |
 
 **Key findings**
 
@@ -58,7 +67,7 @@ src/emotion/
   config.py                     paths, label set, seeds
   data.py                       loading MELD, text cleaning, dialogue-context construction
   baseline.py                   majority + TF-IDF/LogReg baseline (C tuned on dev)
-  train_transformer.py          RoBERTa fine-tuning (context pairs, class-weighted loss, early stopping)
+  train_transformer.py          RoBERTa fine-tuning (context pairs, class-weighted loss, best epoch on dev)
   evaluate.py                   accuracy / precision / recall / F1, confusion matrices
   predict.py                    inference wrappers used by the app and notebook
 scripts/
@@ -111,15 +120,16 @@ internet access, use `--base-model roberta-base`.
   trimmed first.
 * **Training.** AdamW (lr 2e-5, batch 16, 4 epochs, 6% warm-up, linear decay), cross-entropy
   weighted by 1/sqrt(class frequency), and the best epoch chosen on dev weighted-F1. The test
-  set is used once. Three seeds per configuration.
+  set is used once. Three seeds for each of the two main configurations; ablations use one seed.
 * **Metrics.** Accuracy, precision, recall and F1. Weighted-F1 is the standard MELD metric;
   macro-F1 shows rare-class performance.
 
 ## Limitations
 
 Text only: MELD was annotated from video, so sarcasm and tone are missed. Rare emotions (fear,
-disgust) remain weak. Each turn gets a single label. The domain is a 1990s US sitcom.
-roberta-base was chosen to fit the CPU budget. See the report and `DEMO_GUIDE.md`.
+disgust) remain weak and unstable across runs. Two anonymous context turns did not reliably
+improve over the utterance alone. Each turn gets a single label. The domain is a 1990s US
+sitcom. roberta-base was chosen to fit the CPU budget. See the report and `DEMO_GUIDE.md`.
 
 ## References
 

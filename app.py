@@ -81,16 +81,26 @@ def classify_conversation(conversation: str):
     return highlighted, table
 
 
+def _runs(name: str) -> list[dict]:
+    """Metrics of a configuration: the main run plus any extra seeds that exist."""
+    paths = [RESULTS_DIR / f"{name}{suffix}_metrics.json" for suffix in ("", "_seed13", "_seed7")]
+    return [json.loads(p.read_text()) for p in paths if p.exists()]
+
+
 def about_markdown() -> str:
     rows = []
     for name, title in [("majority", "Always 'neutral'"), ("tfidf_logreg", "TF-IDF + Logistic Regression"),
                         ("roberta_utterance", "RoBERTa (utterance only)"),
                         ("roberta_context", "**RoBERTa + 2 previous turns (this demo)**")]:
-        path = RESULTS_DIR / f"{name}_metrics.json"
-        if path.exists():
-            m = json.loads(path.read_text())
-            rows.append(f"| {title} | {m['accuracy']:.3f} | {m['weighted_f1']:.3f} | {m['macro_f1']:.3f} |")
-    table = ("| Model | Accuracy | Weighted F1 | Macro F1 |\n|---|---|---|---|\n" + "\n".join(rows)) if rows else ""
+        runs = _runs(name)
+        if runs:
+            avg = {k: sum(r[k] for r in runs) / len(runs) for k in ("accuracy", "weighted_f1", "macro_f1")}
+            note = f" (mean of {len(runs)} runs)" if len(runs) > 1 else ""
+            rows.append(f"| {title}{note} | {avg['accuracy']:.3f} | {avg['weighted_f1']:.3f} | {avg['macro_f1']:.3f} |")
+    demo = _runs("roberta_context")[:1]
+    demo_note = (f"\n\nThe model running in this demo is one of those runs (seed 42): accuracy "
+                 f"{demo[0]['accuracy']:.3f}, weighted F1 {demo[0]['weighted_f1']:.3f}." if demo else "")
+    table = ("| Model | Accuracy | Weighted F1 | Macro F1 |\n|---|---|---|---|\n" + "\n".join(rows) + demo_note) if rows else ""
     return f"""
 ## What it does
 Predicts which of **7 emotions** ({", ".join(LABELS)}) a speaker expresses in a dialogue turn.

@@ -1,0 +1,106 @@
+{
+  "accuracy": 0.6337164750957854,
+  "weighted_precision": 0.6198729045489374,
+  "weighted_recall": 0.6337164750957854,
+  "weighted_f1": 0.6227486701326094,
+  "macro_precision": 0.4534347678854304,
+  "macro_recall": 0.422966800829475,
+  "macro_f1": 0.42247321535948906,
+  "per_class": {
+    "neutral": {
+      "precision": 0.772269558481797,
+      "recall": 0.7937898089171974,
+      "f1": 0.7828818217510797,
+      "support": 1256
+    },
+    "joy": {
+      "precision": 0.5771971496437055,
+      "recall": 0.6044776119402985,
+      "f1": 0.5905224787363305,
+      "support": 402
+    },
+    "surprise": {
+      "precision": 0.48677248677248675,
+      "recall": 0.6548042704626335,
+      "f1": 0.5584218512898331,
+      "support": 281
+    },
+    "anger": {
+      "precision": 0.47896440129449835,
+      "recall": 0.4289855072463768,
+      "f1": 0.4525993883792049,
+      "support": 345
+    },
+    "sadness": {
+      "precision": 0.4088397790055249,
+      "recall": 0.3557692307692308,
+      "f1": 0.38046272493573263,
+      "support": 208
+    },
+    "disgust": {
+      "precision": 0.35,
+      "recall": 0.10294117647058823,
+      "f1": 0.1590909090909091,
+      "support": 68
+    },
+    "fear": {
+      "precision": 0.1,
+      "recall": 0.02,
+      "f1": 0.03333333333333333,
+      "support": 50
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.3423247397488953,
+      "dev_accuracy": 0.5761947700631199,
+      "dev_weighted_f1": 0.5381063575771002,
+      "dev_macro_f1": 0.34122583035664966,
+      "minutes": 11.747068969408671
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.0641977455847758,
+      "dev_accuracy": 0.6131650135256989,
+      "dev_weighted_f1": 0.5841021662988509,
+      "dev_macro_f1": 0.3865829792923768,
+      "minutes": 20.30917584101359
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.8988561675598438,
+      "dev_accuracy": 0.6167718665464382,
+      "dev_weighted_f1": 0.5806445653847891,
+      "dev_macro_f1": 0.419366822939403,
+      "minutes": 28.828275966644288
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.7763297997362109,
+      "dev_accuracy": 0.6194770063119928,
+      "dev_weighted_f1": 0.6023772528174776,
+      "dev_macro_f1": 0.44505787696057986,
+      "minutes": 36.970110396544136
+    }
+  ],
+  "args": {
+    "base_model": "models/roberta-base-spacy",
+    "context_turns": 2,
+    "epochs": 4,
+    "batch_size": 16,
+    "lr": 2e-05,
+    "weight_decay": 0.01,
+    "warmup": 0.06,
+    "max_length": 128,
+    "class_weight_power": 0.0,
+    "bf16": null,
+    "threads": null,
+    "seed": 42,
+    "limit": null,
+    "name": "roberta_context_noweights",
+    "output_dir": null
+  },
+  "best_dev_weighted_f1": 0.6023772528174776,
+  "train_minutes": 37.76854136387507
+}
