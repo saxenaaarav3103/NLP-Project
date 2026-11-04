@@ -1,0 +1,14 @@
+{
+  "context_turns": 2,
+  "max_length": 128,
+  "labels": [
+    "neutral",
+    "joy",
+    "surprise",
+    "anger",
+    "sadness",
+    "disgust",
+    "fear"
+  ],
+  "base_model": "models/roberta-base-spacy"
+}

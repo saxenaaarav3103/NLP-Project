@@ -53,22 +53,18 @@ class EmotionClassifier:
     def predict_proba(self, texts: list[str], contexts: list | None = None, batch_size: int = 32) -> np.ndarray:
         contexts = contexts or [None] * len(texts)
         pairs = [model_input(clean_text(t), self._context_string(c)) for t, c in zip(texts, contexts)]
-        out = []
-        for s in range(0, len(pairs), batch_size):
-            chunk = pairs[s:s + batch_size]
-            firsts = [a for a, _ in chunk]
-            seconds = [b for _, b in chunk]
-            if all(b is None for b in seconds):
-                enc = self.tokenizer(firsts, truncation=True, max_length=self.max_length,
-                                     padding=True, return_tensors="pt")
-            else:  # the tokenizer needs a string for every pair; empty context -> single segment
-                encs = [self.tokenizer(a, b, truncation="only_second" if b else True,
-                                       max_length=self.max_length) for a, b in chunk]
-                enc = self.tokenizer.pad({"input_ids": [e["input_ids"] for e in encs]}, return_tensors="pt")
+        ids = [self.tokenizer(a, b, truncation="only_second" if b else True, max_length=self.max_length)["input_ids"]
+               for a, b in pairs]
+        # Process in order of length so each batch needs little padding, then restore the order.
+        order = sorted(range(len(ids)), key=lambda i: len(ids[i]))
+        probs = np.zeros((len(ids), len(self.labels)), dtype=np.float32)
+        for s in range(0, len(order), batch_size):
+            chunk = order[s:s + batch_size]
+            enc = self.tokenizer.pad({"input_ids": [ids[i] for i in chunk]}, return_tensors="pt")
             logits = self.model(input_ids=enc["input_ids"].to(self.device),
                                 attention_mask=enc["attention_mask"].to(self.device)).logits
-            out.append(torch.softmax(logits.float(), -1).cpu().numpy())
-        return np.concatenate(out) if out else np.zeros((0, len(self.labels)))
+            probs[chunk] = torch.softmax(logits.float(), -1).cpu().numpy()
+        return probs
 
     def predict(self, text: str, context=None) -> dict[str, float]:
         probs = self.predict_proba([text], [context])[0]

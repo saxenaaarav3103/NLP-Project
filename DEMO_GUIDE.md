@@ -30,20 +30,27 @@ sentences from the assignment):
 > classical baseline (TF-IDF + logistic regression) predicts for the same text."
 
 **3. Why context matters (about 45 s). This is the strongest moment of the demo.** Click the
-two **"What?"** examples one after the other.
-> "The message is identical, just 'What?', but the previous turns differ. After 'I'm getting
-> married next week' the model reads it as surprise. After 'I ate your sandwich and used your
-> toothbrush' the emotion shifts toward anger or disgust. The model reads the last two turns
-> of the conversation, and that's the main design decision of the project. In my experiments,
-> adding context improved the scores most on short replies, and short replies are where
-> emotion is most ambiguous."
+three **"Come on!"** examples one after the other:
+- No context: a toss-up, roughly 42% joy vs 41% anger.
+- After "What a jerk! I cannot believe he's using our divorce to sell mattresses.": **anger**
+  (about 69%).
+- After "We won! We actually won the tickets!": **joy** (about 66%).
 
-(Check before the demo what the model actually outputs for these, and phrase it accordingly.)
+The text under the prediction says what the same model would answer *without* the previous
+turns, so the audience can see that the context changed the decision.
+
+> "The message is identical; only the previous turns differ. The model reads the last two
+> turns of the conversation, and that's the main design decision of the project. On the test
+> set, giving the model context changed 289 of 2,610 predictions: 110 became correct and 84
+> became wrong, a net gain. The flips happen mostly on short reactive replies like this one."
 
 **4. Whole conversations (about 30 s).** Open the *Whole conversation* tab and click **Label every
 turn**.
 > "For a full dialogue, each turn is labelled using only the turns before it, so this could
 > run live inside a chatbot to respond empathetically or flag angry customers."
+
+Expect turn 3 ("I'm kind of terrified, actually.") to come out as *sadness* rather than
+*fear*. Don't hide it: it's a live example of the weakest class and a good bridge to step 5.
 
 **5. Why it works and its limitations (about 45 s).** Open the *About the model* tab.
 > "Why it works: RoBERTa was pre-trained on 160 GB of text, so it already understands negation,
@@ -54,10 +61,12 @@ turn**.
 >
 > "Limitations: it's text only. The dataset was labelled while watching the video, so tone
 > of voice is missing and sarcasm fools it." Go back to tab 1 and click the sarcasm example
-> ("Oh great, another meeting...").
+> ("Oh great, another meeting..."); the model says *joy*.
 > "The rare emotions, fear and disgust, have only about 270 training examples each and are the
-> weakest. It also gives one label per turn, so mixed feelings can't be expressed, and it was
-> trained on a 90s sitcom, so slang or Hinglish may not transfer."
+> weakest. Fear is often read as anger or sadness. The model also uses context mostly as a
+> positive-or-negative signal: after sad news, 'Come on!' becomes anger rather than sadness.
+> It gives one label per turn, so mixed feelings can't be expressed, and it was trained on a
+> 90s sitcom, so slang or Hinglish may not transfer."
 
 ## Likely questions, with short answers
 
@@ -101,9 +110,15 @@ With names, the model could learn shortcuts like "Joey is usually happy", which 
 for real users.
 
 **What were the hardest classes and why?**
-Fear and disgust. They have very few examples and share cues with surprise and anger ("Oh my
-God!"). Most errors in every class are confusions with neutral, because mild emotion often
-looks neutral in text.
+Fear and disgust. They have very few examples (50 and 68 in the test set) and share cues with
+surprise and anger ("Oh my God!"). Most errors in every class are confusions with neutral,
+because mild emotion often looks neutral in text.
+
+**Does the model really use the context?**
+Yes, measurably but modestly. With the context removed, the same model's weighted-F1 drops
+from 0.633 to 0.618, and context changes 289 test predictions (110 fixed, 84 broken). It
+helps most on short replies such as "Come on!" or "I know!". Strongly marked phrases ("Oh my
+God.", "Seriously?") keep their usual label whatever the context.
 
 **Where did the pretrained weights come from?**
 `roberta-base`. The cloud machine I trained on could not reach the Hugging Face Hub, so I

@@ -49,7 +49,7 @@ def main(run_dir: Path, out_dir: Path):
           f"shipped model {metrics['weighted_f1']:.4f}; accuracy {old.get('accuracy', float('nan')):.4f} -> "
           f"{metrics['accuracy']:.4f}")
     keep = {k: old[k] for k in ("history", "args", "best_dev_weighted_f1", "train_minutes") if k in old}
-    metrics.update(keep, evaluated_model=str(out_dir.relative_to(ROOT)))
+    metrics.update(keep, evaluated_model=str(out_dir.resolve().relative_to(ROOT)))
     path.write_text(json.dumps(metrics, indent=2))
     np.save(RESULTS_DIR / f"{name}_test_probs.npy", probs)
 

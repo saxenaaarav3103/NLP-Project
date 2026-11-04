@@ -1,0 +1,107 @@
+{
+  "accuracy": 0.6375478927203065,
+  "weighted_precision": 0.6341916924939536,
+  "weighted_recall": 0.6375478927203065,
+  "weighted_f1": 0.6332227467031849,
+  "macro_precision": 0.44865929142621924,
+  "macro_recall": 0.44789817526192893,
+  "macro_f1": 0.4438910281881268,
+  "per_class": {
+    "neutral": {
+      "precision": 0.782608695652174,
+      "recall": 0.7882165605095541,
+      "f1": 0.7854026180087267,
+      "support": 1256
+    },
+    "joy": {
+      "precision": 0.6340782122905028,
+      "recall": 0.5646766169154229,
+      "f1": 0.5973684210526315,
+      "support": 402
+    },
+    "surprise": {
+      "precision": 0.49489795918367346,
+      "recall": 0.6903914590747331,
+      "f1": 0.5765230312035661,
+      "support": 281
+    },
+    "anger": {
+      "precision": 0.4880952380952381,
+      "recall": 0.4753623188405797,
+      "f1": 0.48164464023494863,
+      "support": 345
+    },
+    "sadness": {
+      "precision": 0.43558282208588955,
+      "recall": 0.34134615384615385,
+      "f1": 0.38274932614555257,
+      "support": 208
+    },
+    "disgust": {
+      "precision": 0.22535211267605634,
+      "recall": 0.23529411764705882,
+      "f1": 0.2302158273381295,
+      "support": 68
+    },
+    "fear": {
+      "precision": 0.08,
+      "recall": 0.04,
+      "f1": 0.05333333333333334,
+      "support": 50
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.614170302355632,
+      "dev_accuracy": 0.581605049594229,
+      "dev_weighted_f1": 0.5658113869741381,
+      "dev_macro_f1": 0.393401768404546,
+      "minutes": 8.997106790542603
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.2888945543392485,
+      "dev_accuracy": 0.6050495942290351,
+      "dev_weighted_f1": 0.5943920717223465,
+      "dev_macro_f1": 0.44264410963292405,
+      "minutes": 17.278740572929383
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.0781471786204013,
+      "dev_accuracy": 0.5969341749323716,
+      "dev_weighted_f1": 0.5808822663914194,
+      "dev_macro_f1": 0.44586609827047174,
+      "minutes": 25.102759301662445
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.9156808656177813,
+      "dev_accuracy": 0.5906221821460775,
+      "dev_weighted_f1": 0.5895750539231125,
+      "dev_macro_f1": 0.4548848364407859,
+      "minutes": 33.25584413210551
+    }
+  ],
+  "args": {
+    "base_model": "models/roberta-base-spacy",
+    "context_turns": 2,
+    "epochs": 4,
+    "batch_size": 16,
+    "lr": 2e-05,
+    "weight_decay": 0.01,
+    "warmup": 0.06,
+    "max_length": 128,
+    "class_weight_power": 0.5,
+    "bf16": null,
+    "threads": null,
+    "seed": 42,
+    "limit": null,
+    "name": "roberta_context",
+    "output_dir": null
+  },
+  "best_dev_weighted_f1": 0.5943920717223465,
+  "train_minutes": 34.07720393737157,
+  "evaluated_model": "models/roberta-meld-context"
+}

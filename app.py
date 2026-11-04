@@ -50,6 +50,14 @@ def classify(message: str, context: str):
     used = (f"using the previous {min(len(turns), model.context_turns)} turn(s) as context"
             if turns else "without context")
     text = f"### {EMOJI[top]} **{top}** ({conf:.0%} confidence, {used})\n"
+    if turns:  # show what the same model says when the context is removed
+        no_ctx = model.predict(message)
+        ntop, nconf = next(iter(no_ctx.items()))
+        if ntop != top:
+            text += (f"\nWithout the previous turns the same model says **{ntop}** ({nconf:.0%}), "
+                     "so **the context changed the decision**.\n")
+        else:
+            text += f"\nWithout the previous turns: also **{ntop}** ({nconf:.0%}).\n"
     if btop != top:
         text += (f"\nThe TF-IDF baseline says **{btop}**: it only sees surface words, "
                  "while RoBERTa reads the whole sentence (and the context).")
@@ -93,8 +101,9 @@ Predicts which of **7 emotions** ({", ".join(LABELS)}) a speaker expresses in a 
 * **Model:** RoBERTa-base (a 125M-parameter transformer pre-trained on 160 GB of English text),
   fine-tuned to classify the target utterance **together with the two previous turns** of the
   conversation. Pre-training gives it general language understanding (negation, intensity,
-  idioms); fine-tuning teaches it which cues signal which emotion; context resolves short,
-  ambiguous replies such as "What?" or "Oh."
+  idioms); fine-tuning teaches it which cues signal which emotion; context helps with short,
+  ambiguous replies: "Come on!" alone is a toss-up between joy and anger, after a complaint it
+  is anger, after good news it is joy.
 * **Imbalance:** neutral is 47% of the data while fear/disgust are under 3% each, so the loss
   up-weights rare classes (1/sqrt(frequency)).
 
@@ -106,7 +115,11 @@ Weighted F1 is the standard MELD metric; macro F1 weighs all seven emotions equa
 ## Limitations
 * Text only: MELD labels were made while *watching* the show, so tone of voice and facial
   expressions are missing; sarcasm is often misread.
-* Rare emotions (fear, disgust) have few training examples and the lowest scores.
+* Rare emotions (fear, disgust) have few training examples and the lowest scores; fear is
+  often read as anger or sadness.
+* Context is used mostly as a positive/negative signal: after sad news a short reply tends to
+  become *anger* rather than *sadness*, and strongly marked replies ("Seriously?", "Oh my God.")
+  stay *surprise* whatever came before.
 * One label per turn: mixed feelings ("happy but nervous") are forced into one class.
 * Trained on a 1990s US sitcom: slang, other dialects and other domains may transfer poorly.
 """
@@ -115,10 +128,11 @@ Weighted F1 is the standard MELD metric; macro F1 weighs all seven emotions equa
 EXAMPLES = [
     ["I can't believe I failed the exam again. I'm so disappointed in myself.", ""],
     ["I got the job!! I'm so excited!", ""],
-    ["What?", "Ross: Rachel, I have something to tell you.\nRoss: I'm getting married. To Emily. Next week."],
-    ["What?", "Joey: Hey, I ate your sandwich. And your yoghurt. And I used your toothbrush."],
-    ["Get away from me! There's something moving under the bed!", ""],
+    ["Come on!", ""],
+    ["Come on!", "Ross: What a jerk!\nRachel: I cannot believe he's using our divorce to sell mattresses."],
+    ["Come on!", "Joey: We won! We actually won the tickets!\nChandler: This is going to be the best weekend ever!"],
     ["Ew, ew, ew! That's the grossest thing I've ever seen!", ""],
+    ["I'm scared. What if something goes wrong?", ""],
     ["Oh great, another meeting. Exactly what I needed today.", ""],
 ]
 
