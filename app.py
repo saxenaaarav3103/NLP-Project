@@ -25,8 +25,14 @@ COLORS = {"neutral": "#9ca3af", "joy": "#facc15", "surprise": "#38bdf8", "anger"
           "sadness": "#6366f1", "disgust": "#22c55e", "fear": "#a855f7"}
 SPEAKER = re.compile(r"^\s*[A-Z][\w .'-]{0,20}:\s+")  # "Rachel: ..." -> "..."
 
-model = EmotionClassifier()
-baseline = BaselineClassifier()
+model: EmotionClassifier | None = None  # loaded in __main__ (or by load_models)
+baseline: BaselineClassifier | None = None
+
+
+def load_models(model_dir=None):
+    global model, baseline
+    model = EmotionClassifier(model_dir) if model_dir else EmotionClassifier()
+    baseline = BaselineClassifier()
 
 
 def _lines(text: str) -> list[str]:
@@ -159,5 +165,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--share", action="store_true", help="create a temporary public link")
     ap.add_argument("--port", type=int, default=7860)
+    ap.add_argument("--model-dir", default=None, help="fine-tuned model (default: models/roberta-meld-context)")
     args = ap.parse_args()
+    load_models(args.model_dir)
     build().launch(share=args.share, server_port=args.port, theme=gr.themes.Soft())
