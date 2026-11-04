@@ -11,7 +11,11 @@ from __future__ import annotations
 
 import json
 import statistics as st
+import sys
 from pathlib import Path
+
+import numpy as np
+from sklearn.metrics import f1_score
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -22,6 +26,7 @@ from docx.shared import Cm, Pt, RGBColor
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results"
+sys.path.insert(0, str(ROOT))
 ACCENT = RGBColor(0x1F, 0x4E, 0x79)
 
 
@@ -123,14 +128,25 @@ def build():
     def mean(runs, key):
         return st.mean(r[key] for r in runs)
 
-    gain_ctx_w = mean(ctx, "weighted_f1") - mean(utt, "weighted_f1")
-    gain_ctx_m = mean(ctx, "macro_f1") - mean(utt, "macro_f1")
     gain_base_w = mean(ctx, "weighted_f1") - tfidf["weighted_f1"]
+    # Context vs utterance-only, paired by seed (same seed = same initial classifier head)
+    by_c = {r["args"]["seed"]: r for r in ctx}
+    by_u = {r["args"]["seed"]: r for r in utt}
+    common = sorted(set(by_c) & set(by_u))
+    d_w = [by_c[k]["weighted_f1"] - by_u[k]["weighted_f1"] for k in common]
+    d_a = [by_c[k]["accuracy"] - by_u[k]["accuracy"] for k in common]
+    wins = sum(d > 0 for d in d_w)
+    sd_runs = st.stdev([r["weighted_f1"] for r in ctx + utt]) if len(ctx + utt) > 1 else 0.0
+    # Same final model with the context removed at test time
+    from src.emotion.data import load_split
+    y_test = load_split("test")["label"].to_numpy()
+    noctx_path = RES / "roberta_context_nocontext_test_probs.npy"
+    noctx_w = (f1_score(y_test, np.load(noctx_path).argmax(1), average="weighted")
+               if noctx_path.exists() else None)
     pc = final["per_class"]
     best_cls = max(pc, key=lambda c: pc[c]["f1"])
     worst = sorted(pc, key=lambda c: pc[c]["f1"])[:2]
     lat = json.loads((RES / "latency.json").read_text()) if (RES / "latency.json").exists() else None
-    ctx_short = json.loads((RES / "context_analysis.json").read_text()) if (RES / "context_analysis.json").exists() else None
 
     doc = Document()
     sec = doc.sections[0]
@@ -145,7 +161,7 @@ def build():
 
     # Title block
     p = para(doc, after=1, align=WD_ALIGN_PARAGRAPH.CENTER)
-    r = p.add_run("Context-Aware Emotion Recognition in Dialogue with RoBERTa")
+    r = p.add_run("Emotion Recognition in Dialogue with a Fine-Tuned RoBERTa")
     r.bold, r.font.size, r.font.color.rgb = True, Pt(15), ACCENT
     p = para(doc, after=1, align=WD_ALIGN_PARAGRAPH.CENTER)
     add_runs(p, "Individual Project #5 - Emotion Recognition from Text   |   ", size=9.5)
@@ -186,8 +202,8 @@ def build():
               "weighted-F1, test set used once. Trained **with** (final model) and **without** context, "
               f"{n_seeds} seeds each; one run takes about 40 min on CPU (bfloat16, fused AdamW). **Why it works:** "
               "pre-training on 160 GB of text gives knowledge of negation, intensity and idioms that n-grams "
-              "lack; context resolves short replies; softened class weights buy rare-class recall at little "
-              "cost to the majority class. *Note:* the development machine could not reach the Hugging Face "
+              "lack; dialogue context can disambiguate replies whose wording is ambiguous; softened class "
+              "weights buy rare-class recall at little cost to the majority class. *Note:* the development machine could not reach the Hugging Face "
               "Hub, so the RoBERTa-base encoder bundled in spaCy's en_core_web_trf was converted to the "
               "transformers format; its layer outputs match the reference implementation (max difference "
               "1.5e-5).")
@@ -236,17 +252,24 @@ def build():
     if c4:
         abl.append(f"4 instead of 2 context turns: W-F1 {c4['weighted_f1']:.3f} vs {final['weighted_f1']:.3f}")
     abl_text = (" Ablations (seed 42, test): " + "; ".join(abl) + ".") if abl else ""
-    short_text = ""
-    if ctx_short:
-        short_text = (f" Surprisingly, the context gain is concentrated in longer turns (>8 words: accuracy "
-                      f"{ctx_short['long_utt']:.3f} → {ctx_short['long_ctx']:.3f}) rather than very short ones "
-                      f"(≤3 words: {ctx_short['short_utt']:.3f} → {ctx_short['short_ctx']:.3f}), whose emotion is "
-                      "mostly carried by tone of voice.")
+    if len(common) >= 2 and wins == len(common):
+        ctx_text = (f" **Context** helped on every seed: paired by seed, +{st.mean(d_w) * 100:.1f} weighted-F1 "
+                    f"and {st.mean(d_a) * 100:+.1f} accuracy points on average.")
+    else:
+        ctx_text = (f" **Context did not give a reliable gain:** paired by seed, context minus utterance-only is "
+                    f"{st.mean(d_w) * 100:+.1f} weighted-F1 points on average and context wins on {wins} of "
+                    f"{len(common)} seeds, which is within run-to-run noise (std across runs "
+                    f"{sd_runs * 100:.1f} points).")
+        if noctx_w is not None:
+            ctx_text += (f" The context model does *use* the context: removing it at test time lowers its "
+                         f"weighted-F1 from {final['weighted_f1']:.3f} to {noctx_w:.3f}, and it flips ambiguous replies "
+                         "such as *\"Come on!\"* between joy and anger. But a model trained without context learns to "
+                         "do as well from the utterance alone. We keep the context model for the demo because it "
+                         "is equally accurate and can exploit conversation history when it is informative.")
     para(doc, before=4, text=
-         f"**Findings.** Fine-tuned RoBERTa with context is the best model: weighted-F1 "
-         f"{mean(ctx, 'weighted_f1'):.3f}, i.e. +{gain_base_w * 100:.1f} points over the TF-IDF baseline "
-         f"and {gain_ctx_w * 100:+.1f} (macro-F1 {gain_ctx_m * 100:+.1f}) over the utterance-only RoBERTa."
-         f"{short_text}{abl_text} Per class (Fig. 1a), *{best_cls}* is easiest (F1 {pc[best_cls]['f1']:.2f}) and "
+         f"**Findings.** Fine-tuned RoBERTa clearly beats the classical baseline: +{gain_base_w * 100:.1f} "
+         f"weighted-F1 points over TF-IDF (mean of the context runs, {mean(ctx, 'weighted_f1'):.3f})."
+         f"{ctx_text}{abl_text} Per class (Fig. 1a), *{best_cls}* is easiest (F1 {pc[best_cls]['f1']:.2f}) and "
          f"*{worst[0]}* / *{worst[1]}* are hardest (F1 {pc[worst[0]]['f1']:.2f} / {pc[worst[1]]['f1']:.2f}; "
          f"only {pc[worst[0]]['support']} and {pc[worst[1]]['support']} test examples). The confusion matrix "
          "(Fig. 1b) shows that for five of the six emotions the dominant error is *neutral*: mild emotion "

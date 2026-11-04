@@ -1,0 +1,106 @@
+{
+  "accuracy": 0.6333333333333333,
+  "weighted_precision": 0.6325910240795105,
+  "weighted_recall": 0.6333333333333333,
+  "weighted_f1": 0.6308209022723716,
+  "macro_precision": 0.45643136480894336,
+  "macro_recall": 0.46065559064932193,
+  "macro_f1": 0.4550142932584461,
+  "per_class": {
+    "neutral": {
+      "precision": 0.7786438035853468,
+      "recall": 0.7953821656050956,
+      "f1": 0.7869239858211895,
+      "support": 1256
+    },
+    "joy": {
+      "precision": 0.599009900990099,
+      "recall": 0.6019900497512438,
+      "f1": 0.6004962779156328,
+      "support": 402
+    },
+    "surprise": {
+      "precision": 0.5233918128654971,
+      "recall": 0.6370106761565836,
+      "f1": 0.5746388443017657,
+      "support": 281
+    },
+    "anger": {
+      "precision": 0.5186567164179104,
+      "recall": 0.4028985507246377,
+      "f1": 0.4535073409461664,
+      "support": 345
+    },
+    "sadness": {
+      "precision": 0.4024390243902439,
+      "recall": 0.3173076923076923,
+      "f1": 0.3548387096774194,
+      "support": 208
+    },
+    "disgust": {
+      "precision": 0.21794871794871795,
+      "recall": 0.25,
+      "f1": 0.2328767123287671,
+      "support": 68
+    },
+    "fear": {
+      "precision": 0.15492957746478872,
+      "recall": 0.22,
+      "f1": 0.18181818181818182,
+      "support": 50
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.5809680221197495,
+      "dev_accuracy": 0.5924256086564472,
+      "dev_weighted_f1": 0.5616616921139075,
+      "dev_macro_f1": 0.36571725392338567,
+      "minutes": 5.27615449031194
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.2967071939199724,
+      "dev_accuracy": 0.5888187556357078,
+      "dev_weighted_f1": 0.5819075470125731,
+      "dev_macro_f1": 0.4310466587809286,
+      "minutes": 10.085290972391764
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.1031532460999496,
+      "dev_accuracy": 0.612263300270514,
+      "dev_weighted_f1": 0.6013761999058568,
+      "dev_macro_f1": 0.4739712975628293,
+      "minutes": 14.991118160883586
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.9518364563230781,
+      "dev_accuracy": 0.6113615870153292,
+      "dev_weighted_f1": 0.6033407933166913,
+      "dev_macro_f1": 0.47530248758845917,
+      "minutes": 19.960007174809775
+    }
+  ],
+  "args": {
+    "base_model": "models/roberta-base-spacy",
+    "context_turns": 0,
+    "epochs": 4,
+    "batch_size": 16,
+    "lr": 2e-05,
+    "weight_decay": 0.01,
+    "warmup": 0.06,
+    "max_length": 128,
+    "class_weight_power": 0.5,
+    "bf16": null,
+    "threads": null,
+    "seed": 13,
+    "limit": null,
+    "name": "roberta_utterance_seed13",
+    "output_dir": null
+  },
+  "best_dev_weighted_f1": 0.6033407933166913,
+  "train_minutes": 20.290431455771127
+}

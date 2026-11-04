@@ -120,6 +120,9 @@ Weighted F1 is the standard MELD metric; macro F1 weighs all seven emotions equa
 * Context is used mostly as a positive/negative signal: after sad news a short reply tends to
   become *anger* rather than *sadness*, and strongly marked replies ("Seriously?", "Oh my God.")
   stay *surprise* whatever came before.
+* Averaged over three training runs, this context model is **not more accurate** than the same
+  model trained without context (weighted F1 about 0.625 for both). Context helps on some
+  ambiguous replies and hurts on others.
 * One label per turn: mixed feelings ("happy but nervous") are forced into one class.
 * Trained on a 1990s US sitcom: slang, other dialects and other domains may transfer poorly.
 """

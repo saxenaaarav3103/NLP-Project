@@ -1,13 +1,21 @@
 {
-  "fixed": 189,
-  "broken": 139,
-  "short_n": 715,
-  "short_utt": 0.7076923076923077,
-  "short_ctx": 0.7160839160839161,
-  "medium_n": 859,
-  "medium_utt": 0.6507566938300349,
-  "medium_ctx": 0.6577415599534342,
-  "long_n": 1036,
-  "long_utt": 0.5299227799227799,
-  "long_ctx": 0.5666023166023166
+  "fixed_seed42": 189,
+  "broken_seed42": 139,
+  "gain_by_length": {
+    "<= 3 words": {
+      "seed 42": 0.84,
+      "seed 13": -1.96,
+      "seed 7": -1.54
+    },
+    "4-8 words": {
+      "seed 42": 0.7,
+      "seed 13": -1.4,
+      "seed 7": -0.47
+    },
+    "> 8 words": {
+      "seed 42": 3.67,
+      "seed 13": -0.68,
+      "seed 7": 0.48
+    }
+  }
 }

@@ -10,6 +10,29 @@ conversation. It is compared against a majority-class baseline, a TF-IDF + logis
 baseline, and an utterance-only RoBERTa ablation. A Gradio web app demos it live.
 
 <!-- RESULTS -->
+## Results (test set, 2,610 utterances)
+
+| Model | Accuracy | Weighted P | Weighted R | Weighted F1 | Macro F1 |
+|---|---|---|---|---|---|
+| Majority class (always *neutral*) | 0.481 | 0.232 | 0.481 | 0.313 | 0.093 |
+| TF-IDF + logistic regression | 0.527 | 0.563 | 0.527 | 0.541 | 0.385 |
+| RoBERTa, utterance only | 0.625 ± 0.008 | 0.629 ± 0.004 | 0.625 ± 0.008 | 0.625 ± 0.006 | 0.454 ± 0.001 |
+| **RoBERTa + 2 context turns (final)** | 0.626 ± 0.010 | 0.631 ± 0.003 | 0.626 ± 0.010 | 0.626 ± 0.007 | 0.447 ± 0.008 |
+
+RoBERTa rows are the mean ± standard deviation over 3 random seeds (42, 13, 7). The shipped model is the seed-42 run: weighted-F1 **0.633**, macro-F1 **0.444**, accuracy **0.638**.
+
+**Key findings**
+
+* **Fine-tuned RoBERTa clearly beats the classical baseline:** +8.4 weighted-F1 points over TF-IDF, on every seed.
+* **Dialogue context did not give a reliable gain.** Paired by seed, context minus utterance-only is +0.1 weighted-F1 points on average (context wins on 1 of 3 seeds). A single-seed comparison (seed 42: +1.3) would have suggested a gain that does not replicate.
+* **The context model does use the context:** removing it at test time lowers its weighted-F1 from 0.633 to 0.618, and it flips ambiguous replies ("Come on!" is anger after a complaint, joy after good news). A model trained without context compensates from the utterance alone.
+* **Rare classes are hard and unstable:** fear (50 test examples) ranges from F1 0.05 to 0.22 across the three context runs.
+* **The most confident errors are textually neutral turns** ("Okay.", "Yeah.", "No.") that annotators labelled from tone of voice, which shows the ceiling of a text-only model.
+
+![Per-class F1 and confusion matrix](results/figures/report_figure.png)
+
+![Demo app](results/figures/demo_single.png)
+<!-- /RESULTS -->
 
 ## Quick start
 

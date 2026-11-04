@@ -29,8 +29,8 @@ sentences from the assignment):
 > "On the right you can see the probability for every emotion, and underneath, what my
 > classical baseline (TF-IDF + logistic regression) predicts for the same text."
 
-**3. Why context matters (about 45 s). This is the strongest moment of the demo.** Click the
-three **"Come on!"** examples one after the other:
+**3. Context (about 45 s). This is the most visual moment of the demo.** Click the three
+**"Come on!"** examples one after the other:
 - No context: a toss-up, roughly 42% joy vs 41% anger.
 - After "What a jerk! I cannot believe he's using our divorce to sell mattresses.": **anger**
   (about 69%).
@@ -40,10 +40,12 @@ The text under the prediction says what the same model would answer *without* th
 turns, so the audience can see that the context changed the decision.
 
 > "The message is identical; only the previous turns differ. The model reads the last two
-> turns of the conversation, and that's the main design decision of the project. On the test
-> set, giving the model context changed 289 of 2,610 predictions: 110 became correct and 84
-> became wrong, a net gain. Interestingly, the gain comes mostly from longer turns. Very short
-> ones like 'Okay.' get their emotion from tone of voice, which no text can recover."
+> turns of the conversation. Removing the context from this model costs it about 1.5 F1
+> points, so it really uses it. But here's an honest finding: when I trained the same model
+> *without* context, three times with different random seeds, it was just as accurate on
+> average. A single run had suggested context helps, and the repeats showed that was luck. So
+> context helps on ambiguous replies like this one, but in this setup it isn't a reliable
+> overall gain."
 
 **4. Whole conversations (about 30 s).** Open the *Whole conversation* tab and click **Label every
 turn**.
@@ -64,7 +66,7 @@ Expect turn 3 ("I'm kind of terrified, actually.") to come out as *sadness* rath
 > of voice is missing and sarcasm fools it." Go back to tab 1 and click the sarcasm example
 > ("Oh great, another meeting..."); the model says *joy*.
 > "The rare emotions, fear and disgust, have only about 270 training examples each and are the
-> weakest. Fear is often read as anger or sadness. The model also uses context mostly as a
+> weakest. Fear is mostly read as neutral or anger. The model also uses context mostly as a
 > positive-or-negative signal: after sad news, 'Come on!' becomes anger rather than sadness.
 > It gives one label per turn, so mixed feelings can't be expressed, and it was trained on a
 > 90s sitcom, so slang or Hinglish may not transfer."
@@ -112,23 +114,37 @@ for real users.
 
 **What were the hardest classes and why?**
 Fear and disgust. They have very few examples (50 and 68 in the test set) and share cues with
-surprise and anger ("Oh my God!"). Most errors in every class are confusions with neutral,
-because mild emotion often looks neutral in text.
+surprise and anger ("Oh my God!"). For five of the six emotions the most common error is
+predicting neutral, because mild emotion often looks neutral in text.
 
-**Does the model really use the context?**
-Yes, measurably but modestly. With the context removed, the same model's weighted-F1 drops
-from 0.633 to 0.618, and context changes 289 test predictions (110 fixed, 84 broken). The
-gain is concentrated in turns longer than 8 words. Very short turns ("Okay.", "Yeah.") are
-labelled from tone of voice, which text context can't recover. Context flips ambiguous replies
-such as "Come on!" or "I know!", but strongly marked phrases ("Oh my God.", "Seriously?") keep
-their usual label whatever the context.
+**Does the model really use the context? Does context help?**
+Two different questions, and two different answers:
+- *Does it use it?* Yes. With the context removed, the shipped model's weighted-F1 drops
+  from 0.633 to 0.618, and 289 test predictions change (110 fixed, 84 broken). It flips
+  ambiguous replies such as "Come on!" or "I know!" between joy and anger.
+- *Does training with context beat training without it?* Not in my experiments. Over three
+  seeds the averages are practically identical (about 0.625 weighted-F1 each); context won on
+  one of three seed pairs. A model trained without context learns to get the same accuracy
+  from the utterance alone.
+- *Why might that be?* MELD labels often depend on tone of voice, which no text contains. My
+  context has no speaker identities, so the model can't tell a reply from a continuation.
+  Published context gains on MELD use larger, speaker-aware models.
+- *Why keep the context model, then?* It's equally accurate, and it handles cases where the
+  wording alone is ambiguous.
+
+**Why did you run three seeds?**
+Fine-tuning results vary from run to run (here by about ±0.7 F1 points), which is as large as
+the effect I wanted to measure. With one seed I would have reported a 1.3-point gain from
+context that doesn't exist.
 
 **Where did the pretrained weights come from?**
-`roberta-base`. The cloud machine I trained on could not reach the Hugging Face Hub, so I
-extracted the same RoBERTa-base encoder from spaCy's English transformer package (downloaded
-from GitHub) and converted it. `scripts/verify_conversion.py` shows the converted model gives
-the same outputs as the original implementation at every layer. With normal internet access,
-`--base-model roberta-base` downloads it directly.
+RoBERTa-base. The cloud machine I trained on could not reach the Hugging Face Hub, so I
+extracted the RoBERTa-base encoder bundled in spaCy's English transformer package (downloaded
+from GitHub) and converted it to the Hugging Face format. spaCy had trained it a bit further
+for its own tagging and parsing tasks, so it's not bit-identical to the original roberta-base.
+`scripts/verify_conversion.py` shows the converted model gives the same outputs as spaCy's
+implementation at every layer. With normal internet access, `--base-model roberta-base`
+downloads the original directly.
 
 **How could it be improved?**
 A larger model (roberta-large), more context turns, speaker-aware context, data augmentation
