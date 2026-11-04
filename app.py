@@ -101,9 +101,9 @@ Predicts which of **7 emotions** ({", ".join(LABELS)}) a speaker expresses in a 
 * **Model:** RoBERTa-base (a 125M-parameter transformer pre-trained on 160 GB of English text),
   fine-tuned to classify the target utterance **together with the two previous turns** of the
   conversation. Pre-training gives it general language understanding (negation, intensity,
-  idioms); fine-tuning teaches it which cues signal which emotion; context helps with short,
-  ambiguous replies: "Come on!" alone is a toss-up between joy and anger, after a complaint it
-  is anger, after good news it is joy.
+  idioms); fine-tuning teaches it which cues signal which emotion; the context can change the
+  reading of an ambiguous reply: "Come on!" alone is a toss-up between joy and anger, after a
+  complaint it is anger, after good news it is joy.
 * **Imbalance:** neutral is 47% of the data while fear/disgust are under 3% each, so the loss
   up-weights rare classes (1/sqrt(frequency)).
 

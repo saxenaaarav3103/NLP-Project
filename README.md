@@ -74,8 +74,9 @@ internet access, use `--base-model roberta-base`.
 ## Method in brief
 
 * **Problem.** Emotion recognition in conversation, as used by empathetic chatbots, support
-  ticket triage and tone analytics. Turns are short (median 6 words) and ambiguous ("What?"),
-  so the model reads the *previous* turns. It never reads future turns, so it could run live.
+  ticket triage and tone analytics. Turns are short (median 6 words) and ambiguous ("Come on!"
+  can be joyful or angry), so the model reads the *previous* turns. It never reads future
+  turns, so it could run live.
 * **Data.** MELD (Poria et al., 2019), official split 9,989 / 1,109 / 2,610 utterances.
   Heavily imbalanced: 47% neutral, under 3% each for fear and disgust.
 * **Preprocessing.** Unicode and punctuation normalisation. Case, punctuation and repeated

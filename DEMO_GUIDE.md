@@ -42,7 +42,8 @@ turns, so the audience can see that the context changed the decision.
 > "The message is identical; only the previous turns differ. The model reads the last two
 > turns of the conversation, and that's the main design decision of the project. On the test
 > set, giving the model context changed 289 of 2,610 predictions: 110 became correct and 84
-> became wrong, a net gain. The flips happen mostly on short reactive replies like this one."
+> became wrong, a net gain. Interestingly, the gain comes mostly from longer turns. Very short
+> ones like 'Okay.' get their emotion from tone of voice, which no text can recover."
 
 **4. Whole conversations (about 30 s).** Open the *Whole conversation* tab and click **Label every
 turn**.
@@ -116,9 +117,11 @@ because mild emotion often looks neutral in text.
 
 **Does the model really use the context?**
 Yes, measurably but modestly. With the context removed, the same model's weighted-F1 drops
-from 0.633 to 0.618, and context changes 289 test predictions (110 fixed, 84 broken). It
-helps most on short replies such as "Come on!" or "I know!". Strongly marked phrases ("Oh my
-God.", "Seriously?") keep their usual label whatever the context.
+from 0.633 to 0.618, and context changes 289 test predictions (110 fixed, 84 broken). The
+gain is concentrated in turns longer than 8 words. Very short turns ("Okay.", "Yeah.") are
+labelled from tone of voice, which text context can't recover. Context flips ambiguous replies
+such as "Come on!" or "I know!", but strongly marked phrases ("Oh my God.", "Seriously?") keep
+their usual label whatever the context.
 
 **Where did the pretrained weights come from?**
 `roberta-base`. The cloud machine I trained on could not reach the Hugging Face Hub, so I

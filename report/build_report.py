@@ -161,7 +161,7 @@ def build():
               "(*neutral, joy, surprise, anger, sadness, disgust, fear*). Users of such a system include "
               "chatbots that should answer empathetically, support desks that flag angry customers, and "
               "analytics of conversational tone. Three properties make the task hard: (i) turns are short "
-              "and ambiguous (median 6 words; *\"What?\"* can be surprise or anger), so the model must use the "
+              "and ambiguous (median 6 words; *\"Come on!\"* can be joyful or angry), so the model must use the "
               "**preceding** turns, and only those, if it is to run live; (ii) classes are highly imbalanced "
               "(47% neutral, <3% each fear/disgust), so accuracy alone is misleading; (iii) gold labels were "
               "assigned while watching video, so tone of voice is missing from the text. **Constraint:** only "
@@ -204,7 +204,8 @@ def build():
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.style = "Table Grid"
     set_cell_margins(table)
-    widths = [Cm(5.6)] + [Cm(2.35)] * len(cols)
+    widths = [Cm(6.2)] + [Cm(2.2)] * len(cols)
+    table.autofit = False
     for j, h in enumerate(["Model"] + [c for c, _ in cols]):
         cell = table.rows[0].cells[j]
         cell.text = ""
@@ -221,6 +222,8 @@ def build():
                 cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
             if is_final:
                 set_cell_shading(cell, "F2F7FC")
+    for j, w in enumerate(widths):
+        table.columns[j].width = w
     for row in table.rows:
         for j, w in enumerate(widths):
             row.cells[j].width = w
@@ -235,18 +238,19 @@ def build():
     abl_text = (" Ablations (seed 42, test): " + "; ".join(abl) + ".") if abl else ""
     short_text = ""
     if ctx_short:
-        short_text = (f" Context helps most on short turns (≤3 words): accuracy {ctx_short['short_utt']:.3f} → "
-                      f"{ctx_short['short_ctx']:.3f}, vs {ctx_short['long_utt']:.3f} → {ctx_short['long_ctx']:.3f} "
-                      "on longer ones.")
+        short_text = (f" Surprisingly, the context gain is concentrated in longer turns (>8 words: accuracy "
+                      f"{ctx_short['long_utt']:.3f} → {ctx_short['long_ctx']:.3f}) rather than very short ones "
+                      f"(≤3 words: {ctx_short['short_utt']:.3f} → {ctx_short['short_ctx']:.3f}), whose emotion is "
+                      "mostly carried by tone of voice.")
     para(doc, before=4, text=
          f"**Findings.** Fine-tuned RoBERTa with context is the best model: weighted-F1 "
          f"{mean(ctx, 'weighted_f1'):.3f}, i.e. +{gain_base_w * 100:.1f} points over the TF-IDF baseline "
-         f"and +{gain_ctx_w * 100:.1f} (macro-F1 {gain_ctx_m * 100:+.1f}) over the same model without context."
+         f"and {gain_ctx_w * 100:+.1f} (macro-F1 {gain_ctx_m * 100:+.1f}) over the utterance-only RoBERTa."
          f"{short_text}{abl_text} Per class (Fig. 1a), *{best_cls}* is easiest (F1 {pc[best_cls]['f1']:.2f}) and "
          f"*{worst[0]}* / *{worst[1]}* are hardest (F1 {pc[worst[0]]['f1']:.2f} / {pc[worst[1]]['f1']:.2f}; "
          f"only {pc[worst[0]]['support']} and {pc[worst[1]]['support']} test examples). The confusion matrix "
-         "(Fig. 1b) shows that the dominant error for every emotion is *neutral*: mild emotion often looks "
-         "neutral in text. For reference, published text-only systems using the much larger RoBERTa-large with "
+         "(Fig. 1b) shows that for five of the six emotions the dominant error is *neutral*: mild emotion "
+         "often looks neutral in text. For reference, published text-only systems using the much larger RoBERTa-large with "
          "speaker-aware context reach about 0.65 weighted-F1 on MELD [3].")
     p = para(doc, after=0, align=WD_ALIGN_PARAGRAPH.CENTER)
     p.add_run().add_picture(str(RES / "figures" / "report_figure.png"), width=Cm(17.2))
@@ -259,8 +263,9 @@ def build():
     para(doc, "**python app.py** starts a Gradio web app with three tabs: (1) a single message with optional "
               "previous turns, showing RoBERTa's probability for all seven emotions next to the TF-IDF baseline; "
               "(2) a whole conversation, where every turn is labelled using only the turns before it; (3) an "
-              "\"About\" tab with the test metrics and limitations. Typing *\"What?\"* after different previous "
-              "turns visibly changes the prediction, which demonstrates why context matters." + lat_text)
+              "\"About\" tab with the test metrics and limitations. The message *\"Come on!\"* is read as anger "
+              "after a complaint and as joy after good news, and the app also shows what the model would say "
+              "without the previous turns." + lat_text)
 
     heading(doc, "6. Limitations and future work")
     para(doc, "(1) **Text only:** sarcasm and tone-dependent labels are the main failure mode. (2) **Rare "
