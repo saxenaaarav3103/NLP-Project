@@ -1,0 +1,53 @@
+{
+  "accuracy": 0.4812260536398467,
+  "weighted_precision": 0.23157851470178062,
+  "weighted_recall": 0.4812260536398467,
+  "weighted_f1": 0.3126849060381001,
+  "macro_precision": 0.06874657909140668,
+  "macro_recall": 0.14285714285714285,
+  "macro_f1": 0.0928238858916562,
+  "per_class": {
+    "neutral": {
+      "precision": 0.4812260536398467,
+      "recall": 1.0,
+      "f1": 0.6497672012415934,
+      "support": 1256
+    },
+    "joy": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 402
+    },
+    "surprise": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 281
+    },
+    "anger": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 345
+    },
+    "sadness": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 208
+    },
+    "disgust": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 68
+    },
+    "fear": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 50
+    }
+  }
+}
