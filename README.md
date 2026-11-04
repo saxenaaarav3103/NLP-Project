@@ -13,6 +13,8 @@ baseline, and an utterance-only RoBERTa ablation. A Gradio web app demos it live
 
 ## Quick start
 
+Requires Python 3.10 or newer. No GPU is needed.
+
 ```bash
 pip install -r requirements.txt
 python app.py                       # demo, opens http://127.0.0.1:7860

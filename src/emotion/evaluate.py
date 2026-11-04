@@ -4,11 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 from sklearn.metrics import (accuracy_score, classification_report, confusion_matrix,
                              f1_score, precision_recall_fscore_support)
 
@@ -78,11 +74,6 @@ def plot_confusion(y_true, y_pred, title: str, path: Path | None = None, ax=None
     return cm
 
 
-def summary_row(name: str, m: dict) -> str:
-    return (f"| {name} | {m['accuracy']:.3f} | {m['weighted_precision']:.3f} | "
-            f"{m['weighted_recall']:.3f} | {m['weighted_f1']:.3f} | {m['macro_f1']:.3f} |")
-
-
 def fig_path(name: str) -> Path:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     return FIGURES_DIR / name
@@ -90,7 +81,3 @@ def fig_path(name: str) -> Path:
 
 def macro_f1(y_true, y_pred) -> float:
     return float(f1_score(y_true, y_pred, average="macro", zero_division=0))
-
-
-def as_array(x) -> np.ndarray:
-    return np.asarray(x)
