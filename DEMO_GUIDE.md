@@ -21,8 +21,10 @@ the whole repository, including `models/`.
 > neutral, joy, surprise, anger, sadness, disgust and fear. It's a RoBERTa transformer that I
 > fine-tuned on MELD, a dataset of about 13,000 dialogue turns from the TV show *Friends*."
 
-**2. Basic predictions (about 30 s).** Click the first two examples (the exam and job
-sentences from the assignment):
+**2. Basic predictions (about 30 s).** Click the first two examples, **I failed the exam
+again…** and **I got the job!!** (the sentences from the assignment). Clicking an example fills
+in the boxes and runs the prediction straight away, so there is no need to press **Detect
+emotion** afterwards:
 - "I can't believe I failed the exam again..." gives **sadness**.
 - "I got the job!! I'm so excited!" gives **joy**.
 
@@ -30,14 +32,16 @@ sentences from the assignment):
 > classical baseline (TF-IDF + logistic regression) predicts for the same text."
 
 **3. Context (about 45 s). This is the most visual moment of the demo.** Click the three
-**"Come on!"** examples one after the other:
+**"Come on!"** examples one after the other: **“Come on!” (no context)**, **“Come on!” after a
+complaint** and **“Come on!” after good news**:
 - No context: a toss-up, roughly 42% joy vs 41% anger.
 - After "What a jerk! I cannot believe he's using our divorce to sell mattresses.": **anger**
   (about 69%).
 - After "We won! We actually won the tickets!": **joy** (about 66%).
 
-The text under the prediction says what the same model would answer *without* the previous
-turns, so the audience can see that the context changed the decision.
+In the result card, two chips labelled **With context** and **Without context** show what the
+same model answers with and without the previous turns, and a **Context changed the decision**
+pill appears when they differ, so the audience can see that the context changed the decision.
 
 > "The message is identical; only the previous turns differ. The model reads the last two
 > turns of the conversation. Removing the context from this model costs it about 1.5 F1
@@ -65,7 +69,7 @@ Expect turn 3 ("I'm kind of terrified, actually.") to come out as *sadness* rath
 >
 > "Limitations: it's text only. The dataset was labelled while watching the video, so tone
 > of voice is missing and sarcasm fools it." Go back to tab 1 and click the sarcasm example
-> ("Oh great, another meeting..."); the model says *joy*.
+> (**Oh great, another meeting. (sarcasm)**); the model says *joy*.
 > "The rare emotions, fear and disgust, have only about 270 training examples each and are the
 > weakest. Fear is mostly read as neutral or anger. The model also uses context mostly as a
 > positive-or-negative signal: after sad news, 'Come on!' becomes anger rather than sadness.

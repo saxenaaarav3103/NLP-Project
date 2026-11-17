@@ -109,7 +109,10 @@ def classify(message: str, context: str) -> str:
         return _empty("Type a message first",
                       "The message box is empty. Write something, or pick one of the examples.", "✍️")
     turns = _lines(context)
-    probs = model.predict(message, context=turns)
+    if turns:  # with and without context in one forward pass
+        probs, no_ctx = model.predict_pair(message, context=turns)
+    else:
+        probs = model.predict(message)
     base = baseline.predict(message)
     top, conf = next(iter(probs.items()))
     btop, bconf = next(iter(base.items()))
@@ -139,7 +142,6 @@ def classify(message: str, context: str) -> str:
 
     # -- with vs without context: the key comparison
     if turns:
-        no_ctx = model.predict(message)
         ntop, nconf = next(iter(no_ctx.items()))
         changed = ntop != top
         if changed:

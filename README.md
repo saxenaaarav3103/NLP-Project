@@ -61,6 +61,7 @@ The fine-tuned model ships in `models/roberta-meld-context/` (float16, split int
 
 ```
 app.py                          Gradio demo (single message / whole conversation / about)
+assets/app.css                  stylesheet of the demo (light and dark mode)
 notebooks/emotion_recognition.ipynb   end-to-end notebook: data, preprocessing, baselines,
                                       evaluation, context analysis, error analysis, demo
 src/emotion/
@@ -70,6 +71,7 @@ src/emotion/
   train_transformer.py          RoBERTa fine-tuning (context pairs, class-weighted loss, best epoch on dev)
   evaluate.py                   accuracy / precision / recall / F1, confusion matrices
   predict.py                    inference wrappers used by the app and notebook
+  runtime.py                    small hardware helpers (bfloat16 detection and autocast)
 scripts/
   export_model.py               trained run -> compact float16 model in models/ (+ re-evaluation)
   make_report_figure.py         figure for the report
