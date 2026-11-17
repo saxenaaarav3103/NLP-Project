@@ -33,8 +33,9 @@ import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_linear_schedule_with_warmup
 
 from .config import ID2LABEL, LABEL2ID, LABELS, RESULTS_DIR, ROOT, SEED
-from .data import add_context, load_all, model_input
+from .data import add_context, encode_pair, load_all, model_input
 from .evaluate import compute_metrics, fig_path, plot_confusion, report, save_metrics
+from .runtime import autocast_ctx, cpu_supports_bf16
 
 
 def set_seed(seed: int) -> None:
@@ -52,8 +53,7 @@ def encode(df, tokenizer, context_turns: int, max_length: int):
         pairs = [model_input(t) for t in df["text"]]
     features = []
     for (a, b), label in zip(pairs, df["label"]):
-        enc = tokenizer(a, b, truncation="only_second" if b else True, max_length=max_length)
-        features.append({"input_ids": enc["input_ids"], "label": int(label)})
+        features.append({"input_ids": encode_pair(tokenizer, a, b, max_length), "label": int(label)})
     return features
 
 
@@ -88,20 +88,6 @@ def class_weights(labels, power: float = 0.5) -> torch.Tensor:
     counts = np.bincount(labels, minlength=len(LABELS)).astype(float).clip(min=1)
     w = (counts.sum() / counts) ** power
     return torch.tensor(w / w.mean(), dtype=torch.float)
-
-
-def cpu_supports_bf16() -> bool:
-    """True on CPUs with native bfloat16 matrix units (Intel AMX / AVX512-BF16)."""
-    try:
-        with open("/proc/cpuinfo") as f:
-            flags = f.read()
-    except OSError:  # macOS / Windows: just use float32
-        return False
-    return "amx_bf16" in flags or "avx512_bf16" in flags
-
-
-def autocast_ctx(enabled: bool):
-    return torch.autocast("cpu", dtype=torch.bfloat16, enabled=enabled)
 
 
 @torch.no_grad()

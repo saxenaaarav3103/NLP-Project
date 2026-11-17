@@ -54,13 +54,32 @@ def add_context(df: pd.DataFrame, n_turns: int = 2) -> pd.DataFrame:
     learn character-specific shortcuts ("Ross is usually ...") that would not transfer
     to new users."""
     df = df.copy()
-    contexts = []
-    for _, dialog in df.groupby("dialogue_id", sort=False):
+    # Work on row positions in (dialogue, utterance) order, then write each context back
+    # to its own row, so the result is also correct when the rows are not sorted or the
+    # dialogues are interleaved (``load_split`` returns sorted rows, so it is unaffected).
+    keys = ["dialogue_id", "utterance_id"] if "utterance_id" in df.columns else ["dialogue_id"]
+    ordered = df[keys + ["text"]].assign(_pos=range(len(df))).sort_values(keys, kind="stable")
+    contexts = [""] * len(df)
+    for _, dialog in ordered.groupby("dialogue_id", sort=False):
         turns = list(dialog["text"])
-        for i in range(len(turns)):
-            contexts.append(" | ".join(turns[max(0, i - n_turns):i]))
+        for i, pos in enumerate(dialog["_pos"]):
+            contexts[pos] = " | ".join(turns[max(0, i - n_turns):i])
     df["context"] = contexts
     return df
+
+
+def encode_pair(tokenizer, text: str, context: str | None, max_length: int) -> list[int]:
+    """Token ids for one (target, context) pair, at most ``max_length`` long.
+
+    Only the context is truncated. If the target alone already fills ``max_length``, the
+    tokenizer cannot trim the context far enough and raises; then the context is dropped
+    and the target is truncated instead (this never happens in MELD)."""
+    if context:
+        try:
+            return tokenizer(text, context, truncation="only_second", max_length=max_length)["input_ids"]
+        except Exception:  # "Sequence to truncate too short to respect the provided max_length"
+            pass
+    return tokenizer(text, truncation=True, max_length=max_length)["input_ids"]
 
 
 def model_input(text: str, context: str = "", max_context_words: int = 60) -> tuple[str, str | None]:
