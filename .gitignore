@@ -8,3 +8,19 @@ flagged/
 runs/
 models/roberta-base-spacy/
 *.whl
+
+# virtual environments (never commit these)
+.venv/
+venv/
+env/
+ENV/
+
+# macOS / editor / tool junk
+.DS_Store
+.vscode/
+.idea/
+.pytest_cache/
+*.egg-info/
+
+# local secrets
+.env
