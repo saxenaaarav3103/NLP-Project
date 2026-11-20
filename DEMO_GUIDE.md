@@ -107,7 +107,7 @@ anger. Recall is the share of real anger turns that the model found. F1 is their
 The cross-entropy loss is weighted by 1/sqrt(class frequency), a middle ground I tested
 against both extremes (test set: 68 disgust and 50 fear examples):
 - **No weights:** the model almost ignores rare classes. It predicts disgust only 20 times and
-  fear 10 times; macro-F1 is 0.423.
+  fear 10 times; macro-F1 is 0.422.
 - **Full inverse weights (1/freq):** it over-predicts them. Disgust is predicted 205 times at
   13% precision and fear 133 times, and weighted-F1 drops by 6 points to 0.571.
 - **1/sqrt(freq), my choice:** disgust is predicted 71 times, close to the true 68. This gives
