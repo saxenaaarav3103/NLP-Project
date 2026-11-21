@@ -82,7 +82,6 @@ data/raw/                       MELD csv files (official train/dev/test split)
 models/                         tfidf_logreg.joblib, roberta-meld-context/ (final model)
 results/                        metrics (*.json), test-set probabilities (*.npy), figures/
 report/                         1-2 page summary report (.docx + .pdf)
-DEMO_GUIDE.md                   3-minute demo script and likely viva questions
 ```
 
 ## Reproducing the experiments
@@ -131,7 +130,7 @@ internet access, use `--base-model roberta-base`.
 Text only: MELD was annotated from video, so sarcasm and tone are missed. Rare emotions (fear,
 disgust) remain weak and unstable across runs. Two anonymous context turns did not reliably
 improve over the utterance alone. Each turn gets a single label. The domain is a 1990s US
-sitcom. roberta-base was chosen to fit the CPU budget. See the report and `DEMO_GUIDE.md`.
+sitcom. roberta-base was chosen to fit the CPU budget. See the report for details.
 
 ## References
 
