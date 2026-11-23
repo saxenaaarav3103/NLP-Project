@@ -3,8 +3,6 @@ __pycache__/
 .ipynb_checkpoints/
 .gradio/
 flagged/
-# training runs (full-precision checkpoints) and the converted base model are not committed;
-# the shipped fine-tuned model lives in models/roberta-meld-context/
 runs/
 models/roberta-base-spacy/
 *.whl
